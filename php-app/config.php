@@ -33,5 +33,3 @@ if ($__base === '' || $__base[0] !== '/') { $__base = '/' . $__base; }
 define('BASE_URL', rtrim($__base, '/'));
 unset($__docRoot, $__appDir, $__base, $__rel);
 ?>
-
-<!-- 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 -->
