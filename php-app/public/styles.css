@@ -1,0 +1,63 @@
+:root{--bg:#0f1220;--card:#161a2b;--text:#e8eefc;--muted:#8da2c0;--accent:#69d;--ok:#19c37d;--warn:#f5a623;--critical:#e24a4a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 system-ui,Segoe UI,Arial,sans-serif}
+.container{max-width:980px;margin:0 auto;padding:16px}
+.topbar{background:#0c0f1a;border-bottom:1px solid #22263a}
+.topbar .brand{font-weight:700}
+.nav a{color:var(--text);text-decoration:none;margin-right:12px}
+.nav .user{color:var(--muted);margin-right:12px}
+.nav .logout{color:#d88}
+h1,h2{margin:12px 0}
+.cards{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-bottom:14px}
+.card{background:var(--card);border:1px solid #22263a;border-radius:14px;padding:20px;box-shadow:0 10px 24px rgba(0,0,0,.28)}
+.grid.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid.device-split{display:grid;grid-template-columns:2fr 1fr;gap:18px}
+@media (max-width: 900px){
+  .grid.device-split{grid-template-columns:1fr}
+}
+table{width:100%;border-collapse:separate;border-spacing:0}
+th,td{padding:10px;border-bottom:1px solid #22263a}
+th{background:#12162a;position:sticky;top:0}
+tbody tr:nth-child(even) td{background:rgba(255,255,255,0.02)}
+tbody tr:hover td{background:rgba(255,255,255,0.04)}
+label{display:block;margin:8px 0}
+input,select,button{width:100%;padding:10px 12px;border-radius:10px;border:1px solid #2a2f46;background:#0e1120;color:var(--text);transition:all .15s ease}
+input:focus,select:focus{outline:none;border-color:#3d6cff;box-shadow:0 0 0 3px rgba(61,108,255,0.2)}
+button{cursor:pointer;background:linear-gradient(180deg,#2a7cff,#2561d9);border:none}
+button:hover{filter:brightness(1.05)}
+button:active{transform:translateY(1px)}
+.muted{color:var(--muted)}
+.alert{padding:8px;border-radius:6px;margin:8px 0}
+.alert.ok{background:#113225;border:1px solid #1f6f50}
+.alert.warn{background:#3a2a11;border:1px solid #7a5a1a}
+.badge{display:inline-block;padding:3px 10px;border-radius:999px;border:1px solid #2a2f46}
+.badge.ok{background:#113225;border:1px solid #1f6f50}
+.badge.info{background:#0e2540;border:1px solid #1a4a80}
+.badge.warn{background:#3a2a11;border:1px solid #7a5a1a}
+.badge.critical{background:#3a1111;border:1px solid #7a1a1a}
+.badge.category-essential{background:#10253a;border-color:#1a4a80}
+.badge.category-non_essential{background:#2d2238;border-color:#5a3a7a}
+.badge.category-flexible{background:#0f2f24;border-color:#1f6f50}
+.badge.category-pc{background:#18213a;border-color:#3453a8}
+.badge.category-tv{background:#1b2033;border-color:#3b6ec9}
+.badge.category-speaker{background:#1e1a2e;border-color:#6d4ac7}
+.badge.category-fridge{background:#0f2530;border-color:#2a7f9e}
+.badge.category-washer{background:#0f2a22;border-color:#1e7a5f}
+.badge.category-camera{background:#2a221f;border-color:#7a5a3b}
+.icon{display:inline-block;margin-right:6px}
+.footer{border-top:1px solid #22263a;margin-top:28px;padding:16px;color:var(--muted)}
+.stat .k{color:var(--muted);font-size:12px;text-transform:uppercase}
+.stat .v{font-size:34px;font-weight:800}
+.inline{display:inline-block;margin-right:8px}
+.btn{display:inline-block;padding:8px 12px;border:1px solid #2a2f46;border-radius:8px;color:var(--text);text-decoration:none;background:#10162a}
+.btn:hover{border-color:#3d6cff}
+.chart-placeholder{height:160px;border:1px dashed #2a2f46;border-radius:6px;display:flex;align-items:center;justify-content:center;margin-top:8px}
+.answer{margin-top:10px;white-space:pre-wrap}
+
+/* Minimal bar chart */
+.mini-chart{position:relative;display:flex;align-items:flex-end;gap:6px;height:180px;border:1px solid #2a2f46;border-radius:10px;padding:10px 10px 28px;background:#0e1120;margin-top:8px}
+.mini-chart .bar{width:12px;background:linear-gradient(180deg,#3d6cff,#2a4fb0);border-radius:4px 4px 0 0;transition:height .2s, filter .15s}
+.mini-chart .bar.zero{background:#1a2138}
+.mini-chart .bar:hover{filter:brightness(1.1)}
+.mini-chart-legend{margin-top:6px;color:var(--muted);font-size:12px}
+.mini-chart .xlabels{position:absolute;left:8px;right:8px;bottom:6px;display:flex;justify-content:space-between;color:var(--muted);font-size:10px;pointer-events:none}
+.chart-tooltip{position:absolute;pointer-events:none;background:#0b1225;color:#e8eefc;border:1px solid #2a2f46;border-radius:6px;padding:6px 8px;font-size:12px;box-shadow:0 6px 18px rgba(0,0,0,.35);display:none;z-index:10}

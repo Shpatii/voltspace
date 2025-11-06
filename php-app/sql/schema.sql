@@ -1,0 +1,68 @@
+-- VoltSpace schema
+CREATE DATABASE IF NOT EXISTS `voltSpace_db` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE `voltSpace_db`;
+
+SET NAMES utf8mb4;
+
+CREATE TABLE IF NOT EXISTS users (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(190) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS homes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  address VARCHAR(200) NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_homes_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS rooms (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  home_id INT NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  floor INT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_rooms_home FOREIGN KEY(home_id) REFERENCES homes(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS devices (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  room_id INT NOT NULL,
+  type ENUM('light','ac','plug','sensor','tv','pc','speaker','fridge','washer','camera') NOT NULL,
+  name VARCHAR(120) NOT NULL,
+  serial_number VARCHAR(32) NULL,
+  bt_code VARCHAR(16) NULL,
+  state_json TEXT NULL,
+  power_w INT NOT NULL DEFAULT 0,
+  last_active DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_devices_room FOREIGN KEY(room_id) REFERENCES rooms(id) ON DELETE CASCADE,
+  INDEX idx_room_id(room_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS device_logs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  device_id INT NOT NULL,
+  event VARCHAR(32) NOT NULL,
+  payload TEXT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_logs_device FOREIGN KEY(device_id) REFERENCES devices(id) ON DELETE CASCADE,
+  INDEX idx_device_id(device_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS insights (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  title VARCHAR(128) NOT NULL,
+  detail TEXT NULL,
+  severity ENUM('info','warn','critical') NOT NULL DEFAULT 'info',
+  acknowledged TINYINT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_insights_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX idx_user_id(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
