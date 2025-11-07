@@ -2,6 +2,10 @@
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/auth.php';
 $user = current_user();
+$body_class = '';
+if (!empty($page_class)) {
+    $body_class = ' class="' . h(trim($page_class)) . '"';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -11,7 +15,7 @@ $user = current_user();
     <title><?php echo h(SITE_NAME); ?></title>
     <link rel="stylesheet" href="<?php echo h(BASE_URL); ?>/public/styles.css">
 </head>
-<body>
+<body<?php echo $body_class; ?>>
 <header class="topbar">
     <div class="container">
         <div class="brand">⚡ <?php echo h(SITE_NAME); ?></div>

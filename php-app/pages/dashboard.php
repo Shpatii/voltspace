@@ -167,56 +167,103 @@ for ($h = 0; $h < 24; $h++) {
     $series[$h] = $sumW;
 }
 
+$page_class = 'dashboard-page';
 include __DIR__ . '/../includes/header.php';
 ?>
-<h1>Dashboard</h1>
 
-<div class="cards">
-    <div class="card stat"><div class="k">Total Devices</div><div class="v"><?php echo (int)$total_devices; ?></div></div>
-    <div class="card stat"><div class="k">Devices ON</div><div class="v"><?php echo (int)$on_count; ?></div></div>
-    <div class="card stat"><div class="k">Current Load</div><div class="v"><?php echo (int)$current_load_w; ?> W</div></div>
-    <div class="card stat"><div class="k">kWh Today</div><div class="v"><?php echo number_format($kwh_today, 2); ?></div></div>
+<div class="dashboard-intro">
+    <div class="intro-copy">
+        <h1>Energy Dashboard</h1>
+        <p class="page-subtitle">A minimal snapshot of your connected spaces and live energy usage.</p>
+    </div>
+    <div class="intro-glance">
+        <span class="intro-label">Devices ON</span>
+        <span class="intro-value"><?php echo (int)$on_count; ?></span>
+    </div>
 </div>
 
-<div class="grid two">
-    <section class="card">
-        <h2>Longest Running ON</h2>
-        <table>
-            <tr><th>Device</th><th>Type</th><th>Room</th><th>Duration</th></tr>
-            <?php foreach ($longest as $e): ?>
-                <tr>
-                    <td><?php echo h($e['name']); ?></td>
-                    <td><?php echo h($e['type']); ?></td>
-                    <td><?php echo h($e['room']); ?></td>
-                    <td data-start="<?php echo h($e['last_active_iso'] ?? ''); ?>"><?php echo h(fmt_duration((int)$e['duration'])); ?></td>
-                </tr>
-            <?php endforeach; ?>
-        </table>
-    </section>
-    <section class="card">
-        <h2>AI Insights</h2>
-        <form id="runInsightsForm" method="post" action="<?php echo h(BASE_URL); ?>/api/run_insights.php">
-            <button type="submit">Run AI Insights</button>
-        </form>
-        <div id="insightsResult" class="muted" style="margin-top:6px"></div>
-        <?php
-           $maxW = max(1, (int)max($series));
-           echo '<div class="mini-chart" id="powerChart" aria-label="Estimated hourly power (W)">';
-           echo '<div class="chart-tooltip" id="chartTip"></div>';
-           foreach ($series as $h => $w) {
-             $pct = (int)round(($w / $maxW) * 100);
-             $cls = $w>0 ? 'bar' : 'bar zero';
-             $hourLabel = str_pad((string)$h, 2, '0', STR_PAD_LEFT) . ':00';
-             echo '<div class="'.$cls.'" data-hour="'.$hourLabel.'" data-w="'.$w.'" style="height:'.$pct.'%"></div>';
-           }
-           echo '<div class="xlabels">';
-           for ($i=0;$i<24;$i+=3) { $lbl = str_pad((string)$i,2,'0',STR_PAD_LEFT); echo '<span>'.$lbl.'</span>'; }
-           echo '</div>';
-           echo '</div>';
-           echo '<div class="mini-chart-legend">Today hourly load (W). Peak: '.$maxW.' W</div>';
-        ?>
-    </section>
-</div>
+<section class="metrics-grid">
+    <article class="metric-card">
+        <span class="metric-label">Total devices</span>
+        <span class="metric-value"><?php echo (int)$total_devices; ?></span>
+        <span class="metric-meta">Across all homes</span>
+    </article>
+    <article class="metric-card">
+        <span class="metric-label">Current load</span>
+        <span class="metric-value"><?php echo number_format((int)$current_load_w); ?> W</span>
+        <span class="metric-meta">Live estimate</span>
+    </article>
+    <article class="metric-card">
+        <span class="metric-label">kWh today</span>
+        <span class="metric-value"><?php echo number_format($kwh_today, 2); ?></span>
+        <span class="metric-meta">Approximate usage</span>
+    </article>
+    <article class="metric-card">
+        <span class="metric-label">Active ratio</span>
+        <span class="metric-value"><?php echo $total_devices ? number_format(($on_count / max(1, $total_devices)) * 100, 0) : 0; ?>%</span>
+        <span class="metric-meta"><?php echo (int)$on_count; ?> active devices</span>
+    </article>
+</section>
+
+<section class="dashboard-panels">
+    <article class="panel panel-table">
+        <header class="panel-header">
+            <h2>Longest Running Devices</h2>
+            <span class="panel-note">Live timer refreshes every second</span>
+        </header>
+        <div class="panel-body">
+            <table class="minimal-table">
+                <thead>
+                    <tr><th>Device</th><th>Type</th><th>Room</th><th>Duration</th></tr>
+                </thead>
+                <tbody>
+                    <?php if (empty($longest)): ?>
+                        <tr><td colspan="4" class="empty">No devices are currently running.</td></tr>
+                    <?php else: ?>
+                        <?php foreach ($longest as $e): ?>
+                            <tr>
+                                <td><?php echo h($e['name']); ?></td>
+                                <td><?php echo h($e['type']); ?></td>
+                                <td><?php echo h($e['room']); ?></td>
+                                <td data-start="<?php echo h($e['last_active_iso'] ?? ''); ?>"><?php echo h(fmt_duration((int)$e['duration'])); ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+    </article>
+    <article class="panel panel-insights">
+        <header class="panel-header">
+            <h2>AI Insights</h2>
+            <span class="panel-note">Trigger the FastAPI service for fresh recommendations</span>
+        </header>
+        <div class="panel-body">
+            <form id="runInsightsForm" class="insights-form" method="post" action="<?php echo h(BASE_URL); ?>/api/run_insights.php">
+                <button type="submit" class="primary-btn">Run AI Insights</button>
+            </form>
+            <div id="insightsResult" class="muted panel-result"></div>
+            <?php
+               $maxW = max(1, (int)max($series));
+               echo '<div class="chart-wrapper">';
+               echo '<div class="mini-chart" id="powerChart" aria-label="Estimated hourly power (W)">';
+               echo '<div class="chart-tooltip" id="chartTip"></div>';
+               foreach ($series as $h => $w) {
+                 $pct = (int)round(($w / $maxW) * 100);
+                 $cls = $w>0 ? 'bar' : 'bar zero';
+                 $hourLabel = str_pad((string)$h, 2, '0', STR_PAD_LEFT) . ':00';
+                 echo '<div class="'.$cls.'" data-hour="'.$hourLabel.'" data-w="'.$w.'" style="height:'.$pct.'%"></div>';
+               }
+               echo '<div class="xlabels">';
+               for ($i=0;$i<24;$i+=3) { $lbl = str_pad((string)$i,2,'0',STR_PAD_LEFT); echo '<span>'.$lbl.'</span>'; }
+               echo '</div>';
+               echo '</div>';
+               echo '<div class="mini-chart-legend">Today hourly load (W). Peak: '.$maxW.' W</div>';
+               echo '</div>';
+            ?>
+        </div>
+    </article>
+</section>
 
 <script>
 // Live update durations every second using last_active ISO timestamps

@@ -50,53 +50,69 @@ function room_name(array $rooms, int $rid): string {
 
 include __DIR__ . '/../includes/header.php';
 ?>
-<h1>Devices</h1>
+<section class="page-header">
+    <div>
+        <h1>Devices</h1>
+        <p class="page-subtitle">Monitor and manage every device across your homes.</p>
+    </div>
+</section>
 
 <div class="grid device-split">
-    <section class="card">
+    <section class="card device-list-card">
         <h2>Device List</h2>
-        <table>
-            <tr><th>Name</th><th>Type</th><th>Room</th><th>Category</th><th>State</th><th>Power W</th><th>Last Active</th><th>Actions</th></tr>
-            <?php foreach ($devices as $d): $state = safe_json_decode($d['state_json']); $on = $state['on'] ?? false; ?>
-                <tr>
-                    <td><?php $ti = $TYPE_ICONS[$d['type']] ?? '🧩'; echo '<span class="icon">'.h($ti).'</span> '.h($d['name']); ?></td>
-                    <td><?php echo h($d['type']); ?></td>
-                    <td><?php echo h($d['room_name']); ?></td>
-                    <td>
-                        <?php $cat = $state['category'] ?? null; if ($cat): $ci = $CATEGORY_ICONS[$cat] ?? '🏷️'; ?>
-                            <span class="badge category-<?php echo h($cat); ?>"><span class="icon"><?php echo h($ci); ?></span><?php echo h(ucwords(str_replace('_',' ', $cat))); ?></span>
-                        <?php else: ?>
-                            <span class="muted">—</span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <span class="badge <?php echo $on ? 'ok' : '';?>"><?php echo $on ? 'ON' : 'OFF'; ?></span>
-                        <?php if ($d['type']==='light'): ?>
-                            <small>Brightness: <?php echo (int)($state['brightness'] ?? 100); ?>%</small>
-                        <?php elseif ($d['type']==='ac'): ?>
-                            <small>Setpoint: <?php echo (int)($state['setpoint'] ?? 24); ?>°C</small>
-                        <?php endif; ?>
-                    </td>
-                    <td><?php echo (int)$d['power_w']; ?></td>
-                    <td><?php echo h(fmt_datetime($d['last_active'])); ?></td>
-                    <td>
-                        <form method="post" action="<?php echo h(BASE_URL); ?>/api/toggle_device.php" style="display:inline">
-                            <input type="hidden" name="device_id" value="<?php echo (int)$d['id']; ?>">
-                            <button type="submit"><?php echo $on ? 'Turn OFF' : 'Turn ON'; ?></button>
-                        </form>
-                        <a class="btn" href="<?php echo h(BASE_URL); ?>/pages/device_edit.php?id=<?php echo (int)$d['id']; ?>">Edit</a>
-                        <form method="post" action="<?php echo h(BASE_URL); ?>/api/delete_device.php" style="display:inline" onsubmit="return confirm('Delete this device?')">
-                            <input type="hidden" name="device_id" value="<?php echo (int)$d['id']; ?>">
-                            <button type="submit">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
+        <p class="muted">All devices sorted by most recently added. Use the actions to toggle, edit, or remove.</p>
+        <table class="data-table">
+            <thead>
+                <tr><th>Name</th><th>Type</th><th>Room</th><th>Category</th><th>State</th><th>Power W</th><th>Last Active</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                <?php if (!$devices): ?>
+                    <tr><td colspan="8" class="empty">No devices yet. Add your first one using the wizard.</td></tr>
+                <?php else: ?>
+                    <?php foreach ($devices as $d): $state = safe_json_decode($d['state_json']); $on = $state['on'] ?? false; ?>
+                        <tr data-device-id="<?php echo (int)$d['id']; ?>">
+                            <td><?php $ti = $TYPE_ICONS[$d['type']] ?? '🧩'; echo '<span class="icon">'.h($ti).'</span> '.h($d['name']); ?></td>
+                            <td><?php echo h($d['type']); ?></td>
+                            <td><?php echo h($d['room_name']); ?></td>
+                            <td>
+                                <?php $cat = $state['category'] ?? null; if ($cat): $ci = $CATEGORY_ICONS[$cat] ?? '🏷️'; ?>
+                                    <span class="badge category-<?php echo h($cat); ?>"><span class="icon"><?php echo h($ci); ?></span><?php echo h(ucwords(str_replace('_',' ', $cat))); ?></span>
+                                <?php else: ?>
+                                    <span class="muted">—</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="cell-state">
+                                <span class="badge state-badge <?php echo $on ? 'ok' : '';?>"><?php echo $on ? 'ON' : 'OFF'; ?></span>
+                                <?php if ($d['type']==='light'): ?>
+                                    <small>Brightness: <?php echo (int)($state['brightness'] ?? 100); ?>%</small>
+                                <?php elseif ($d['type']==='ac'): ?>
+                                    <small>Setpoint: <?php echo (int)($state['setpoint'] ?? 24); ?>°C</small>
+                                <?php endif; ?>
+                            </td>
+                            <td><?php echo (int)$d['power_w']; ?></td>
+                            <td class="cell-last-active"><?php echo h(fmt_datetime($d['last_active'])); ?></td>
+                            <td class="table-actions">
+                                <div class="table-actions-inner">
+                                    <form method="post" action="<?php echo h(BASE_URL); ?>/api/toggle_device.php" class="js-toggle-form">
+                                        <input type="hidden" name="device_id" value="<?php echo (int)$d['id']; ?>">
+                                        <button type="submit" class="secondary" data-label-on="Turn OFF" data-label-off="Turn ON"><?php echo $on ? 'Turn OFF' : 'Turn ON'; ?></button>
+                                    </form>
+                                    <a class="btn btn-secondary" href="<?php echo h(BASE_URL); ?>/pages/device_edit.php?id=<?php echo (int)$d['id']; ?>">Edit</a>
+                                    <form method="post" action="<?php echo h(BASE_URL); ?>/api/delete_device.php" onsubmit="return confirm('Delete this device?')">
+                                        <input type="hidden" name="device_id" value="<?php echo (int)$d['id']; ?>">
+                                        <button type="submit" class="danger">Delete</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
         </table>
     </section>
     <section class="card">
         <h2>Add Device (Wizard)</h2>
-        <form method="post" action="<?php echo h(BASE_URL); ?>/api/add_device.php">
+        <form method="post" action="<?php echo h(BASE_URL); ?>/api/add_device.php" class="stack-form">
             <label>Home & Room
                 <select name="room_id" required>
                     <option value="">Select room</option>
@@ -141,5 +157,59 @@ include __DIR__ . '/../includes/header.php';
         </form>
     </section>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const forms = document.querySelectorAll('.js-toggle-form');
+    forms.forEach(form => {
+        form.addEventListener('submit', async (ev) => {
+            ev.preventDefault();
+            const btn = form.querySelector('button');
+            const row = form.closest('tr');
+            if (!btn || !row) { form.submit(); return; }
+            btn.disabled = true;
+            btn.classList.add('loading');
+            const originalText = btn.textContent;
+            btn.textContent = 'Updating…';
+            const formData = new FormData(form);
+            try {
+                const res = await fetch(form.action, {
+                    method: 'POST',
+                    headers: { 'Accept': 'application/json' },
+                    body: formData
+                });
+                if (!res.ok) throw new Error('Request failed');
+                const data = await res.json();
+                if (!data || !data.ok) throw new Error('Toggle failed');
+
+                const badge = row.querySelector('.state-badge');
+                if (badge) {
+                    badge.textContent = data.on ? 'ON' : 'OFF';
+                    badge.classList.toggle('ok', !!data.on);
+                }
+                const toggleBtn = form.querySelector('button');
+                if (toggleBtn) {
+                    const onLabel = toggleBtn.getAttribute('data-label-on') || 'Turn OFF';
+                    const offLabel = toggleBtn.getAttribute('data-label-off') || 'Turn ON';
+                    toggleBtn.textContent = data.on ? onLabel : offLabel;
+                }
+                const lastCell = row.querySelector('.cell-last-active');
+                if (lastCell && data.last_active_fmt) {
+                    lastCell.textContent = data.last_active_fmt;
+                }
+            } catch (err) {
+                console.error(err);
+                form.submit();
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+                if (btn.textContent === 'Updating…') {
+                    btn.textContent = originalText;
+                }
+            }
+        });
+    });
+});
+</script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

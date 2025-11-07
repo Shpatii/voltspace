@@ -35,6 +35,21 @@ $e = 'toggle';
 $stmt->bind_param('iss', $device_id, $e, $payload);
 $stmt->execute();
 
+$accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+$wantsJson = strpos($accept, 'application/json') !== false;
+
+if ($wantsJson) {
+    header('Content-Type: application/json');
+    echo json_encode([
+        'ok' => true,
+        'device_id' => $device_id,
+        'on' => !$on,
+        'last_active' => date('c'),
+        'last_active_fmt' => date('Y-m-d H:i'),
+    ]);
+    exit;
+}
+
 header('Location: ' . BASE_URL . '/pages/devices.php');
 exit;
 ?>

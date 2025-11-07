@@ -45,9 +45,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 include __DIR__ . '/../includes/header.php';
 ?>
-<h1>Edit Device</h1>
+<section class="page-header">
+  <div>
+    <h1>Edit Device</h1>
+    <p class="page-subtitle">Fine-tune <?php echo h($dev['name']); ?> settings and status.</p>
+  </div>
+</section>
 <?php if ($ok): ?><div class="alert ok">Saved.</div><?php endif; ?>
-<form method="post" class="card">
+<form method="post" class="card form-card">
   <input type="hidden" name="id" value="<?php echo (int)$dev['id']; ?>" />
   <div class="grid two">
     <label>Name
@@ -66,8 +71,12 @@ include __DIR__ . '/../includes/header.php';
     <label>Power (W)
       <input type="number" name="power_w" value="<?php echo (int)$dev['power_w']; ?>" min="0" />
     </label>
-    <label>On
-      <input type="checkbox" name="on" <?php echo !empty($state['on'])?'checked':''; ?> />
+    <label>Status
+      <?php $isOn = !empty($state['on']); ?>
+      <span class="checkbox-field">
+        <input type="checkbox" name="on" <?php echo $isOn ? 'checked' : ''; ?> />
+        <span><?php echo $isOn ? 'Device is ON' : 'Device is OFF'; ?></span>
+      </span>
     </label>
   </div>
   <?php if ($dev['type']==='light'): ?>
@@ -83,9 +92,9 @@ include __DIR__ . '/../includes/header.php';
     <?php $laVal = $dev['last_active'] ? date('Y-m-d\TH:i', strtotime($dev['last_active'])) : ''; ?>
     <input type="datetime-local" name="last_active" value="<?php echo h($laVal); ?>" />
   </label>
-  <div>
-    <button type="submit">Save</button>
-    <a class="btn" href="<?php echo h(BASE_URL); ?>/pages/devices.php">Cancel</a>
+  <div class="form-actions">
+    <button type="submit">Save changes</button>
+    <a class="btn btn-secondary" href="<?php echo h(BASE_URL); ?>/pages/devices.php">Cancel</a>
   </div>
 </form>
 
