@@ -17,22 +17,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+$page_class = 'register-page';
 include __DIR__ . '/../includes/header.php';
 ?>
-<h1>Register</h1>
-<?php if ($msg): ?><div class="alert ok"><?php echo h($msg); ?></div><?php endif; ?>
-<?php if ($err): ?><div class="alert warn"><?php echo h($err); ?></div><?php endif; ?>
-<form method="post" class="card">
-    <label>Name
-        <input type="text" name="name" required value="<?php echo h($_POST['name'] ?? ''); ?>">
-    </label>
-    <label>Email
-        <input type="email" name="email" required value="<?php echo h($_POST['email'] ?? ''); ?>">
-    </label>
-    <label>Password
-        <input type="password" name="password" required>
-    </label>
-    <button type="submit">Create Account</button>
-    <p>Already have an account? <a href="/voltspace/pages/login.php">Login</a></p>
-    </form>
+
+<section class="auth-layout register-layout">
+    <div class="auth-illustration">
+        <div class="auth-illustration-inner">
+            <div class="auth-window">
+                <div class="pane"></div>
+                <div class="pane"></div>
+                <div class="pane"></div>
+                <div class="pane"></div>
+            </div>
+            <div class="auth-character">
+                <div class="head"></div>
+                <div class="body"></div>
+                <div class="laptop"></div>
+            </div>
+            <div class="auth-plant"></div>
+            <div class="auth-lamp"></div>
+        </div>
+    </div>
+    <div class="auth-card">
+        <div class="auth-card-header">
+            <span class="auth-logo">⚡</span>
+            <h1>Create your account</h1>
+            <p class="auth-subtitle">Join VoltSpace to start managing your smart home energy usage.</p>
+        </div>
+        <?php if ($msg): ?><div class="alert ok auth-alert"><?php echo h($msg); ?></div><?php endif; ?>
+        <?php if ($err): ?><div class="alert warn auth-alert"><?php echo h($err); ?></div><?php endif; ?>
+        <form method="post" class="auth-form">
+            <label>Full name
+                <input type="text" name="name" placeholder="John Doe" required value="<?php echo h($_POST['name'] ?? ''); ?>">
+            </label>
+            <label>Email address
+                <input type="email" name="email" placeholder="you@example.com" required value="<?php echo h($_POST['email'] ?? ''); ?>">
+            </label>
+            <label>Password
+                <input type="password" name="password" placeholder="Create a strong password" required>
+            </label>
+            <button type="submit" class="primary-btn">Create Account</button>
+        </form>
+        <div class="auth-footer">
+            <p>Already have an account? <a href="<?php echo h(BASE_URL); ?>/pages/login.php">Sign in</a></p>
+        </div>
+    </div>
+</section>
 <?php include __DIR__ . '/../includes/footer.php'; ?>
