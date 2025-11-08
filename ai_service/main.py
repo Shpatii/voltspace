@@ -122,20 +122,39 @@ def insights_ai(devices: List[Device]):
         client = OpenAI(api_key=api_key)
         model = os.getenv("OPENAI_INSIGHTS_MODEL", os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
         compact: List[Dict[str, Any]] = []
-        for d in devices:
-            st = d.state or {}
-            compact.append({
-                "name": d.name,
-                "type": d.type,
-                "on": bool(st.get("on", False)),
-                "power_w": d.power_w,
-                "last_active": d.last_active.isoformat() if isinstance(d.last_active, datetime) else (str(d.last_active) if d.last_active else None),
-                "attrs": {k:v for k,v in st.items() if k != "on"},
-            })
+        for raw in devices:  # tolerate both Pydantic and raw dicts
+            if isinstance(raw, dict):
+                st = raw.get('state') or {}
+                entry = {
+                    'name': raw.get('name'),
+                    'type': raw.get('type'),
+                    'home': raw.get('home'),
+                    'room': raw.get('room'),
+                    'on': bool(raw.get('on', st.get('on', False))),
+                    'power_w': int(raw.get('power_w') or 0),
+                    'hours_on': float(raw.get('hours_on') or 0.0),
+                    'last_active': raw.get('last_active'),
+                    'hour_now': raw.get('hour_now'),
+                    'attrs': {k: v for k, v in (st.items() if isinstance(st, dict) else []) if k != 'on'},
+                }
+            else:
+                d = raw  # Device
+                st = d.state or {}
+                entry = {
+                    'name': d.name,
+                    'type': d.type,
+                    'on': bool(st.get('on', False)),
+                    'power_w': d.power_w,
+                    'last_active': d.last_active.isoformat() if isinstance(d.last_active, datetime) else (str(d.last_active) if d.last_active else None),
+                    'attrs': {k: v for k, v in st.items() if k != 'on'},
+                }
+            compact.append(entry)
         system = (
-            "You are VoltSpace's energy analyst. Analyze devices and produce actionable insights. "
-            "Return ONLY a JSON object with key 'insights' as a list of items with fields: severity ('info'|'warn'|'critical'), title, detail. "
-            "Focus on long-on lights (>8h), AC overuse (>6h), phantom loads at night (00:00-05:00), high draws, and shifting flexible plugs (22:00-06:00)."
+            "You are VoltSpace's energy analyst. Analyze the provided household devices and generate concise, actionable insights. "
+            "Always return JSON with a top-level key 'insights' (1 to 5 items). Each item must have: severity in ['info','warn','critical'], title, detail. "
+            "Use fields like on, hours_on, power_w, hour_now, room/home, and attrs (e.g., brightness, setpoint, flexible) to decide. "
+            "Focus on: long-on lights (>8h), AC overuse (>6h), phantom loads at night (00:00-05:00), high draws, and shifting flexible plugs (22:00-06:00). "
+            "If nothing critical, include at least one 'info' tip (e.g., cost shifting)."
         )
         import json
         user = "Devices JSON:\n" + json.dumps(compact, ensure_ascii=False)
@@ -157,6 +176,13 @@ def insights_ai(devices: List[Device]):
             start = text.find('{')
             data = json.loads(text[start:]) if start >= 0 else {"insights": []}
         ins = data.get("insights", [])
+        if not isinstance(ins, list) or len(ins) == 0:
+            # Provide a soft default so caller saves something useful
+            ins = [{
+                "severity": "info",
+                "title": "No critical issues detected",
+                "detail": "Consider shifting flexible plug loads to 22:00–06:00 and turning off long-on lights."
+            }]
         cleaned = []
         for i in ins:
             sev = (i.get("severity") or "info").lower()

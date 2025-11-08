@@ -92,12 +92,11 @@ include __DIR__ . '/../includes/header.php';
 
 <section class="card">
   <table>
-    <tr><th>Home</th><th>Location</th><th>Energy Price</th><th>kWh Today</th><th>Cost Today</th><th>MTD (est.)</th><th>YTD (est.)</th></tr>
+    <tr><th>Home</th><th>Location</th><th>kWh Today</th><th>Cost Today</th><th>MTD (est.)</th><th>YTD (est.)</th></tr>
     <?php foreach ($report as $r): $h=$r['home']; $c=strtoupper($h['country']??''); $rates=vs_country_rates(); $flag=$rates[$c]['flag']??'🏳️'; $cname=$rates[$c]['name']??$c; $cur=$h['currency']?:'EUR'; $pc=(int)($h['cents']??0)/100.0; ?>
       <tr>
         <td><?php echo h($h['name']); ?></td>
         <td><span class="icon"><?php echo h($flag); ?></span> <?php echo h($cname); ?></td>
-        <td><?php echo h($cur).' '.number_format($pc,2).'/kWh'; ?></td>
         <td><?php echo number_format($r['kwh_today'], 2); ?></td>
         <td><?php echo h($cur).' '.number_format($r['cost_today'], 2); ?></td>
         <td><?php echo h($cur).' '.number_format($r['mtd'], 2); ?></td>
@@ -108,6 +107,51 @@ include __DIR__ . '/../includes/header.php';
   <p class="muted">MTD/YTD are rough estimates extrapolated from today's usage.</p>
   <p class="muted">Tip: open Devices and toggle items to reflect today's activity; logs are used to accumulate on-time.</p>
 </section>
+
+<script>
+// Turn price cells into live calculators and update cost cells on the fly
+(function(){
+  const tbl = document.querySelector('section.card table');
+  if(!tbl) return;
+  const rows = Array.from(tbl.querySelectorAll('tr')).slice(1); // skip header
+  rows.forEach(tr => {
+    const tds = tr.querySelectorAll('td');
+    if (tds.length < 7) return;
+    const priceTd = tds[2];
+    const kwhTd = tds[3];
+    const costTd = tds[4];
+    const mtdTd = tds[5];
+    const ytdTd = tds[6];
+
+    // Parse current values
+    const priceTxt = priceTd.textContent.trim();
+    const m = priceTxt.match(/^(\w{3})\s+([0-9]+(?:\.[0-9]+)?)\s*\/kWh/i);
+    const cur = m ? m[1] : 'EUR';
+    const price = m ? parseFloat(m[2]) : 0;
+    const kwh = parseFloat((kwhTd.textContent||'0').replace(/[^0-9.]/g,'')) || 0;
+
+    // Build widgets
+    const sel = document.createElement('select');
+    ['EUR','USD','ALL'].forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; if(c===cur) o.selected=true; sel.appendChild(o); });
+    sel.className='currency'; sel.setAttribute('aria-label','Currency');
+    const inp = document.createElement('input'); inp.type='number'; inp.className='price'; inp.step='0.01'; inp.min='0'; inp.value = isFinite(price)? price.toFixed(2) : '0.00';
+    const slash = document.createElement('span'); slash.className='muted'; slash.textContent=' /kWh';
+    priceTd.textContent=''; priceTd.appendChild(sel); priceTd.appendChild(inp); priceTd.appendChild(slash);
+
+    function recalc(){
+      const p = parseFloat(inp.value||'0')||0; const c= sel.value||'EUR';
+      const cost = kwh * p; const now = new Date();
+      const mtd = cost * now.getDate();
+      const ytd = cost * (Math.floor((Date.now() - new Date(now.getFullYear(),0,1).getTime())/86400000) + 1);
+      costTd.textContent = c + ' ' + cost.toFixed(2);
+      mtdTd.textContent = c + ' ' + mtd.toFixed(2);
+      ytdTd.textContent = c + ' ' + ytd.toFixed(2);
+    }
+    sel.addEventListener('change', recalc);
+    inp.addEventListener('input', recalc);
+  });
+})();
+</script>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>
 
