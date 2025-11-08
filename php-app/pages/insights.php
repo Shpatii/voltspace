@@ -23,10 +23,15 @@ $insights = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 include __DIR__ . '/../includes/header.php';
 ?>
 <h1>Insights</h1>
-<form method="post" action="<?php echo h(BASE_URL); ?>/api/clear_insights.php" onsubmit="return confirm('Clear all insights?');" style="margin:10px 0">
-  <button type="submit" class="btn" style="background:#a33;color:#fff;border-color:#c66">Clear All Insights</button>
-  <a class="btn" href="<?php echo h(BASE_URL); ?>/api/run_insights.php" style="margin-left:6px">Run AI Insights</a>
-</form>
+<div class="insights-actions" style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 12px;gap:12px">
+  <div>
+    <a class="btn" href="<?php echo h(BASE_URL); ?>/api/run_insights.php">Run AI Insights</a>
+  </div>
+  <form method="post" action="<?php echo h(BASE_URL); ?>/api/clear_insights.php" onsubmit="return confirm('Clear all insights?');" style="margin:0">
+    <button type="submit" class="btn" style="padding:6px 10px;font-size:12px;background:#a33;color:#fff;border-color:#c66">Clear All</button>
+  </form>
+  
+</div>
 <table>
     <tr><th>Severity</th><th>Title</th><th>Detail</th><th>Created</th><th>Action</th></tr>
     <?php foreach ($insights as $i): ?>

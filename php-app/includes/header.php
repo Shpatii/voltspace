@@ -1,6 +1,10 @@
 <?php
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/auth.php';
+// Ensure UTF-8 is sent to the browser to avoid encoding issues (e.g., euro symbol)
+if (!headers_sent()) {
+    header('Content-Type: text/html; charset=utf-8');
+}
 $user = current_user();
 $body_class = '';
 if (!empty($page_class)) {
@@ -27,7 +31,7 @@ if (!empty($page_class)) {
             <a href="<?php echo h(BASE_URL); ?>/pages/devices.php">Devices</a>
             <a href="<?php echo h(BASE_URL); ?>/pages/insights.php">Insights</a>
             <a href="<?php echo h(BASE_URL); ?>/pages/assistant.php">Assistant</a>
-            <a href="<?php echo h(BASE_URL); ?>/pages/floorplan_to_3d.php">Generate 3D Floor Plan</a>
+            <a href="<?php echo h(BASE_URL); ?>/pages/savings_report.php">Savings Report</a>
             <a href="<?php echo h(BASE_URL); ?>/pages/energy_report.php">Energy Report</a>
             <span class="user"><?php echo h($user['email']); ?></span>
             <a class="logout" href="<?php echo h(BASE_URL); ?>/pages/login.php?logout=1">Logout</a>

@@ -175,7 +175,7 @@ $_SESSION['last_kwh_today'] = (float)$kwh_today;
 if ($prev_kwh !== null && $prev_kwh > $kwh_today) {
     $saved_kwh = max(0, $prev_kwh - $kwh_today);
     if ($saved_kwh >= 0.01) {
-        $kg_co2_per_kwh = 0.4; // rough global average factor
+        $kg_co2_per_kwh = 0.9; // rough global average factor
         $saved_kg = $saved_kwh * $kg_co2_per_kwh;
         $trees_per_year_kg = 22.0; // ~22 kg/year per tree (very rough)
         $tree_equiv = max(0.1, $saved_kg / $trees_per_year_kg);

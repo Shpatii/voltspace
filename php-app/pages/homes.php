@@ -163,7 +163,7 @@ include __DIR__ . '/../includes/header.php';
   // Autofill price by country and keep cents hidden field updated
   (function(){
     const rates = {
-      XK: {currency:'EUR', cents: Math.round(0.09*100)},
+      XK: {currency:'EUR', cents: Math.round(0.08*100)},
       AL: {currency:'ALL', cents: Math.round(12*100)},
       LU: {currency:'EUR', cents: Math.round(0.28*100)}
     };

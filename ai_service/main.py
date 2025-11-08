@@ -110,16 +110,16 @@ def insights(devices: List[Device]):
     return {"insights": out}
 
 
-# AI-generated insights (uses OpenAI if key available)
+# AI-generated insights (uses OpenAI if key available) with padding to a minimum count
 @app.post("/insights_ai")
 def insights_ai(devices: List[Device]):
     api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        # Fallback to rule-based insights if no key configured
-        return insights(devices)
+    min_items = int(os.getenv("INSIGHTS_MIN", "3"))
+    max_items = int(os.getenv("INSIGHTS_MAX", "5"))
 
     try:
-        client = OpenAI(api_key=api_key)
+        # Normalize input for prompt and for rule-based fallback
+        client = OpenAI(api_key=api_key) if api_key else None
         model = os.getenv("OPENAI_INSIGHTS_MODEL", os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
         compact: List[Dict[str, Any]] = []
         for raw in devices:  # tolerate both Pydantic and raw dicts
@@ -149,51 +149,90 @@ def insights_ai(devices: List[Device]):
                     'attrs': {k: v for k, v in st.items() if k != 'on'},
                 }
             compact.append(entry)
-        system = (
-            "You are VoltSpace's energy analyst. Analyze the provided household devices and generate concise, actionable insights. "
-            "Always return JSON with a top-level key 'insights' (1 to 5 items). Each item must have: severity in ['info','warn','critical'], title, detail. "
-            "Use fields like on, hours_on, power_w, hour_now, room/home, and attrs (e.g., brightness, setpoint, flexible) to decide. "
-            "Focus on: long-on lights (>8h), AC overuse (>6h), phantom loads at night (00:00-05:00), high draws, and shifting flexible plugs (22:00-06:00). "
-            "If nothing critical, include at least one 'info' tip (e.g., cost shifting)."
-        )
-        import json
-        user = "Devices JSON:\n" + json.dumps(compact, ensure_ascii=False)
-        resp = client.chat.completions.create(
-            model=model,
-            messages=[
-                {"role":"system","content":system},
-                {"role":"user","content":user},
-            ],
-            temperature=0.2,
-            max_tokens=600,
-            timeout=30,
-        )
-        text = (resp.choices[0].message.content or "").strip()
-        # Try reading as JSON; tolerate leading prose
-        try:
-            data = json.loads(text)
-        except Exception:
-            start = text.find('{')
-            data = json.loads(text[start:]) if start >= 0 else {"insights": []}
-        ins = data.get("insights", [])
-        if not isinstance(ins, list) or len(ins) == 0:
-            # Provide a soft default so caller saves something useful
-            ins = [{
-                "severity": "info",
-                "title": "No critical issues detected",
-                "detail": "Consider shifting flexible plug loads to 22:00–06:00 and turning off long-on lights."
-            }]
-        cleaned = []
-        for i in ins:
+
+        # Start with LLM insights if key is available; otherwise start with rule-based
+        ins: List[Dict[str, Any]] = []
+        if client is not None:
+            system = (
+                "You are VoltSpace's energy analyst. Analyze the provided household devices and generate concise, actionable insights. "
+                "Always return JSON with a top-level key 'insights' containing an array of at least and no more than 3 to 5 items. Each item must have: severity in ['info','warn','critical'], title, detail. "
+                "Use fields like on, hours_on, power_w, hour_now, room/home, and attrs (e.g., brightness, setpoint, flexible) to decide. "
+                "Focus on: long-on lights (>8h), AC overuse (>6h), phantom loads at night (00:00-05:00), high draws, and shifting flexible plugs (22:00-06:00). "
+                "If nothing critical, include at least one 'info' tip (e.g., cost shifting)."
+            )
+            import json
+            user = "Devices JSON:\n" + json.dumps(compact, ensure_ascii=False)
+            resp = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role":"system","content":system},
+                    {"role":"user","content":user},
+                ],
+                temperature=0.2,
+                max_tokens=600,
+                timeout=30,
+            )
+            text = (resp.choices[0].message.content or "").strip()
+            # Try reading as JSON; tolerate leading prose
+            try:
+                data = json.loads(text)
+            except Exception:
+                start = text.find('{')
+                data = json.loads(text[start:]) if start >= 0 else {"insights": []}
+            ins = data.get("insights", []) if isinstance(data, dict) else []
+        else:
+            # No API key: fall back to rule-based directly
+            rule_based = insights(devices)
+            ins = rule_based.get("insights", []) if isinstance(rule_based, dict) else []
+
+        # Clean and normalize
+        cleaned: List[Dict[str, Any]] = []
+        for i in (ins or []):
             sev = (i.get("severity") or "info").lower()
             if sev not in ("info","warn","critical"): sev = "info"
             cleaned.append({
                 "severity": sev,
-                "title": i.get("title","Insight")[:128],
+                "title": (i.get("title","Insight") or "Insight")[:128],
                 "detail": i.get("detail",""),
             })
-        return {"insights": cleaned}
-    except Exception as e:
+
+        # If fewer than min_items, pad using rule-based suggestions, then generic tips
+        if len(cleaned) < min_items:
+            rb = insights(devices)
+            rb_list = rb.get("insights", []) if isinstance(rb, dict) else []
+            for i in rb_list:
+                if len(cleaned) >= min_items:
+                    break
+                title = (i.get("title","Insight") or "Insight")[:128]
+                if any(c.get("title") == title for c in cleaned):
+                    continue
+                sev = (i.get("severity") or "info").lower()
+                if sev not in ("info","warn","critical"): sev = "info"
+                cleaned.append({
+                    "severity": sev,
+                    "title": title,
+                    "detail": i.get("detail",""),
+                })
+
+        if len(cleaned) < min_items:
+            # As a final fallback, add generic but varied tips
+            tips = [
+                {"severity":"info","title":"Shift flexible loads to off-peak","detail":"Move usage for flexible plugs to 22:00–06:00 to reduce costs."},
+                {"severity":"info","title":"Review long-on devices","detail":"Look for lights or AC units running >6–8 hours and turn off or adjust schedules."},
+                {"severity":"info","title":"Check phantom loads at night","detail":"Low-use devices drawing power overnight can add up; consider switching off."},
+                {"severity":"info","title":"Calibrate AC setpoints","detail":"A 1–2°C increase can significantly cut cooling energy while maintaining comfort."},
+            ]
+            for tip in tips:
+                if len(cleaned) >= min_items:
+                    break
+                if any(c.get("title") == tip["title"] for c in cleaned):
+                    continue
+                cleaned.append(tip)
+
+        # Cap to max_items
+        return {"insights": cleaned[:max_items]}
+
+    except Exception:
         # On error, fall back
         return insights(devices)
 
