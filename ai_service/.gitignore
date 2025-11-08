@@ -1,0 +1,6 @@
+.env
+uploads/
+static/models/
+__pycache__/
+*.pyc
+

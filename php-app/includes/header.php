@@ -27,6 +27,7 @@ if (!empty($page_class)) {
             <a href="<?php echo h(BASE_URL); ?>/pages/devices.php">Devices</a>
             <a href="<?php echo h(BASE_URL); ?>/pages/insights.php">Insights</a>
             <a href="<?php echo h(BASE_URL); ?>/pages/assistant.php">Assistant</a>
+            <a href="<?php echo h(BASE_URL); ?>/pages/floorplan_to_3d.php">Generate 3D Floor Plan</a>
             <span class="user"><?php echo h($user['email']); ?></span>
             <a class="logout" href="<?php echo h(BASE_URL); ?>/pages/login.php?logout=1">Logout</a>
             <?php else: ?>

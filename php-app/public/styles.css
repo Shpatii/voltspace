@@ -202,3 +202,13 @@ button.danger:active{box-shadow:0 10px 22px rgba(226,74,74,.2)}
   .nav{gap:12px}
   .topbar .container{padding:18px 20px}
 }
+/* Chat styles */
+.chat-card{display:flex;flex-direction:column;gap:12px;min-height:420px}
+.messages{flex:1;overflow:auto;padding:12px;background:#0e1120;border:1px solid rgba(99,117,164,.18);border-radius:14px}
+.msg{display:flex;margin:8px 0}
+.msg .bubble{max-width:70%;padding:10px 12px;border-radius:14px;line-height:1.45}
+.msg.user{justify-content:flex-end}
+.msg.user .bubble{background:#eaf0ff;color:#1c2233;border:1px solid rgba(54,89,246,.25);border-bottom-right-radius:6px}
+.msg.bot .bubble{background:#f4f6fb;color:#1c2233;border:1px solid rgba(99,117,164,.18);border-bottom-left-radius:6px}
+.chat-input{display:flex;gap:10px}
+.chat-input input{flex:1}
