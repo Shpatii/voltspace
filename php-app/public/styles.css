@@ -1,37 +1,106 @@
 :root{--bg:#f6f7fb;--surface:#ffffff;--surface-alt:#eef1fb;--text:#1c2233;--muted:#7c879c;--accent:#3659f6;--accent-dark:#2544d7;--border:#e4e8f5;--shadow-soft:0 18px 38px rgba(15,23,42,.08);--shadow-medium:0 22px 46px rgba(15,23,42,.1);--ok:#19c37d;--warn:#f5a623;--critical:#e24a4a}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 "Segoe UI",system-ui,-apple-system,sans-serif}
+body{margin:0;background:var(--bg);color:var(--text);font:13px/1.35 "Segoe UI",system-ui,-apple-system,sans-serif}
 a{color:inherit;text-decoration:none}
 a:hover{color:var(--accent)}
-.container{max-width:1080px;margin:0 auto;padding:32px 24px}
-main.container{padding-top:36px;padding-bottom:60px}
+.container{max-width:1000px;margin:0 auto;padding:24px 18px}
+main.container{padding-top:28px;padding-bottom:48px}
 
-.page-header{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:28px}
+.page-header{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;margin-bottom:28px}
+.page-header .title-wrap{display:flex;flex-direction:column;gap:6px}
 .page-header h1{margin:0;font-size:32px;font-weight:700}
-.page-header .page-subtitle{margin:6px 0 0;color:var(--muted);font-size:14px;line-height:1.5}
+.page-header .page-subtitle{margin:0;color:var(--muted);font-size:14px;line-height:1.5}
 .page-header .actions{display:flex;gap:12px;flex-wrap:wrap}
 
 .topbar{background:var(--surface);border-bottom:1px solid var(--border);box-shadow:0 16px 34px rgba(15,23,42,.08)}
-.topbar .container{display:flex;align-items:center;gap:28px;padding:20px 28px;max-width:1160px}
-.topbar .brand{font-size:20px;font-weight:700;letter-spacing:.02em;color:var(--text)}
-.nav{display:flex;align-items:center;gap:18px;margin-left:auto;flex-wrap:wrap}
-.nav a{padding:8px 14px;border-radius:999px;background:transparent;border:1px solid transparent;transition:all .15s ease;font-weight:500;color:#48506a}
+.topbar .container{display:flex;align-items:center;gap:18px;padding:12px 18px;max-width:1000px}
+.topbar .brand{font-size:18px;font-weight:700;letter-spacing:.02em;color:var(--text)}
+.nav{display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap}
+.nav a{padding:6px 10px;border-radius:999px;background:transparent;border:1px solid transparent;transition:all .15s ease;font-weight:500;color:#48506a}
 .nav a:hover{border-color:rgba(54,89,246,.3);background:rgba(54,89,246,.08);color:var(--accent)}
 .nav .user{color:var(--muted);font-size:14px;padding:0;border:none;background:none}
 .nav .logout{border-color:rgba(226,74,74,.18);color:#c13d3d}
 .nav .logout:hover{background:rgba(226,74,74,.1);border-color:rgba(226,74,74,.28);color:#a22f2f}
 
-h1{margin:0 0 24px;font-size:32px;font-weight:700}
-h2{margin:0 0 16px;font-size:22px;font-weight:600}
+h1{margin:0 0 1px;font-size:26px;font-weight:700}
+h2{margin:0 0 1px;font-size:16px;font-weight:600}
 .section-title{margin-bottom:12px;font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
 
+/* Move main page heading and subtitle left on wide screens to align with widened devices layout */
+.page-header h1,
+.page-header .page-subtitle {
+  transform: translateX(-150px);
+  /* maintain layout flow and avoid overlap */
+  display: inline-block;
+}
+
+@media (max-width: 1200px) {
+  .page-header h1,
+  .page-header .page-subtitle {
+    transform: none;
+    display: block;
+  }
+}
+
 .cards{display:grid;gap:22px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-bottom:32px}
-.card{background:var(--surface);border:1px solid rgba(99,117,164,.12);border-radius:20px;padding:24px;box-shadow:var(--shadow-soft);width:100%}
-.card.device-list-card{padding:32px 36px;width:calc(90% + 605px);max-width:calc(90% + 605px);margin-left:-300px;margin-right:-300px;min-width:0;overflow-x:auto}
-.grid.two{display:grid;grid-template-columns:1fr 1fr;gap:22px}
-.grid.device-split{display:grid;grid-template-columns:2fr 1fr;gap:40px;align-items:start}
-.grid.device-split > .card:not(.device-list-card){margin-left:285px}
-@media (max-width:900px){.grid.two,.grid.device-split{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid rgba(99,117,164,.12);border-radius:14px;padding:16px;box-shadow:var(--shadow-soft);width:100%}
+.card.device-list-card {
+  padding: 16px 18px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  min-width: 0;
+  overflow-x: auto;
+}
+.grid.two {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* wider left section */
+  gap: 28px;
+  align-items: start;
+}
+/* Parent grid wrapper */
+.grid.device-split {
+  display: grid;
+  grid-template-columns: 60rem 20rem; /* Wide device list + right form */
+  gap: 28px;
+  align-items: start;
+  width: 100%;
+  max-width: 1800px; /* Centered max width */
+  margin: 0 auto; /* Centers the whole layout */
+  padding: 0 0px; /* Keeps space on sides */
+}
+
+/* Device list card */
+.card.device-list-card {
+  padding: 16px 18px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  min-width: 0;
+  overflow-x: auto;
+  grid-column: auto;
+  justify-self: stretch; /* makes it fill its grid cell */
+}
+
+/* General card layout rules */
+.grid.device-split > .card {
+  width: 100%;
+  align-self: start;
+}
+
+.grid.device-split > .card:not(.device-list-card) {
+  margin-left: 0;
+}
+
+/* Responsive layout */
+@media (max-width: 900px) {
+  .grid.device-split {
+    grid-template-columns: 1fr;
+    max-width: 100%;
+    padding: 0 16px;
+  }
+}
+
 
 body.login-page,body.register-page{background:linear-gradient(135deg,#f4f8ff 0%,#eef2fa 100%);min-height:100vh}
 body.login-page .topbar,body.register-page .topbar{background:transparent;border-bottom:none;box-shadow:none}
@@ -70,18 +139,18 @@ body.login-page main.container,body.register-page main.container{display:flex;al
 .auth-lamp::before{content:"";position:absolute;top:-28px;left:-20px;width:48px;height:28px;background:#1b2342;border-radius:24px 24px 8px 8px}
 .auth-lamp::after{content:"";position:absolute;top:-24px;left:-16px;width:40px;height:20px;background:rgba(54,89,246,.18);border-radius:20px}
 
-table{width:100%;border-collapse:collapse}
-th,td{padding:14px 0;border-bottom:1px solid var(--border)}
-th{font-size:11px;text-transform:uppercase;letter-spacing:.1em;text-align:left;color:var(--muted);background:transparent}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{padding:6px 0;border-bottom:1px solid var(--border)}
+th{font-size:10px;text-transform:uppercase;letter-spacing:.08em;text-align:left;color:var(--muted);background:transparent}
 tbody tr:last-child td{border-bottom:none}
-tbody tr:hover td{background:rgba(54,89,246,.06)}
-td{font-size:15px;color:var(--text)}
+tbody tr:hover td{background:rgba(54,89,246,.04)}
+td{font-size:12px;color:var(--text)}
 td.empty{text-align:center;padding:28px 0;color:var(--muted)}
 .data-table td small{display:block;margin-top:8px;padding-top:4px;border-top:1px solid rgba(99,117,164,.16);font-size:12px;color:var(--muted)}
-td.table-actions{padding:18px 0}
-td.table-actions .table-actions-inner{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+td.table-actions{padding:8px 0}
+td.table-actions .table-actions-inner{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 td.table-actions form{margin:0}
-td.table-actions button,td.table-actions .btn{width:auto;padding:10px 16px}
+td.table-actions button,td.table-actions .btn{width:auto;padding:6px 10px;font-size:12px}
 td.table-actions button{white-space:nowrap}
 @media(max-width:1200px){
   .card.device-list-card{padding:28px 24px;width:100%;max-width:100%;margin-left:0;margin-right:0}
@@ -98,6 +167,61 @@ td.table-actions button{white-space:nowrap}
   body.login-page .topbar .container,body.register-page .topbar .container{padding:20px 28px}
   .auth-meta{flex-direction:column;align-items:flex-start;gap:10px}
   .auth-subtitle{font-size:14px}
+}
+
+/* Devices page specific overrides */
+.devices-page .grid.device-split {
+  grid-template-columns: 2fr 280px; /* wider left column for device list */
+  gap: 22px;
+  align-items: start;
+  /* widen by 150px on each side */
+  width: calc(100% + 300px);
+  max-width: calc(100% + 300px);
+  margin-left: -150px;
+  margin-right: -150px;
+  box-sizing: border-box;
+}
+
+/* restore device-list card to normal flow only on devices page */
+.devices-page .card.device-list-card {
+  grid-column: auto;
+  padding: 16px 18px;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  overflow-x: auto;
+}
+
+/* table and compacting only on devices page */
+.devices-page table { font-size: 12px; }
+.devices-page th, .devices-page td { padding: 6px 0; }
+.devices-page td { font-size: 12px; }
+
+/* smaller badges / action buttons on devices page */
+.devices-page .badge { padding: 3px 8px; font-size: 11px; }
+.devices-page td.table-actions button,
+.devices-page td.table-actions .btn { padding: 6px 10px; font-size: 12px; }
+
+/* if you previously added a global html transform scale, undo it here for other pages:
+  (only needed if you added that global rule and want devices-page to behave differently) */
+
+/* Optional: hide less important columns at narrower widths on devices page */
+@media (max-width: 1100px) {
+  .devices-page .cell-last-active,
+  .devices-page td:nth-child(6) /* Power W */ { display: none; }
+}
+
+/* Revert widening on smaller screens so layout stays usable */
+@media (max-width: 1200px) {
+  .devices-page .grid.device-split {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    box-sizing: border-box;
+    grid-template-columns: 1fr 280px;
+    gap: 22px;
+  }
 }
 
 label{display:block;margin:12px 0 6px;font-size:14px;color:var(--muted)}
@@ -135,7 +259,7 @@ button.danger:active{box-shadow:0 10px 22px rgba(226,74,74,.2)}
 .alert.warn{background:rgba(245,166,35,.14);border-color:rgba(245,166,35,.34);color:#a4630d}
 .alert.error{background:rgba(226,74,74,.12);border-color:rgba(226,74,74,.32);color:#a22f2f}
 
-.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;border:1px solid rgba(99,117,164,.24);background:#fff;font-size:12px;color:var(--muted)}
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 8px;border-radius:999px;border:1px solid rgba(99,117,164,.18);background:#fff;font-size:11px;color:var(--muted)}
 .badge.ok{background:rgba(25,195,125,.12);color:#0f7d56;border-color:rgba(25,195,125,.28)}
 .badge.info{background:rgba(54,89,246,.12);color:var(--accent);border-color:rgba(54,89,246,.28)}
 .badge.warn{background:rgba(245,166,35,.14);color:#a4630d;border-color:rgba(245,166,35,.32)}
@@ -211,4 +335,3 @@ button.danger:active{box-shadow:0 10px 22px rgba(226,74,74,.2)}
 .msg.user .bubble{background:#eaf0ff;color:#1c2233;border:1px solid rgba(54,89,246,.25);border-bottom-right-radius:6px}
 .msg.bot .bubble{background:#f4f6fb;color:#1c2233;border:1px solid rgba(99,117,164,.18);border-bottom-left-radius:6px}
 .chat-input{display:flex;gap:10px}
-.chat-input input{flex:1}

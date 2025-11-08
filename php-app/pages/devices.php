@@ -51,13 +51,14 @@ function room_name(array $rooms, int $rid): string {
 include __DIR__ . '/../includes/header.php';
 ?>
 <section class="page-header">
-    <div>
+    <div class="title-wrap">
         <h1>Devices</h1>
         <p class="page-subtitle">Monitor and manage every device across your homes.</p>
     </div>
 </section>
 
-<div class="grid device-split">
+<div class="devices-page">
+  <div class="grid device-split">
     <section class="card device-list-card">
         <h2>Device List</h2>
         <p class="muted">All devices sorted by most recently added. Use the actions to toggle, edit, or remove.</p>
@@ -156,6 +157,7 @@ include __DIR__ . '/../includes/header.php';
             <p class="muted">Serial pattern: ENR-DEV-XXXXXX (hex). BT pattern: BT-XXXX-XXXX (digits).</p>
         </form>
     </section>
+  </div>
 </div>
 
 <script>
