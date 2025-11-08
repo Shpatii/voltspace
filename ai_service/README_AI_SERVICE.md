@@ -10,7 +10,7 @@ Setup
 - Optional: choose a model (default `gpt-3.5-turbo`):
   - In `.env`: `OPENAI_MODEL=gpt-3.5-turbo`
 - Run the service:
-  - `uvicorn ai-service.main:app --reload --port 8000`
+  - `uvicorn ai_service.main:app --reload --port 8000`
 
 Endpoints
 - `POST /insights` — Input: list of devices. Returns `{ "insights": [...] }` with rule-based suggestions.

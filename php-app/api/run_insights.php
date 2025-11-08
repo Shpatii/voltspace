@@ -23,8 +23,8 @@ foreach ($devs as $d) {
     ];
 }
 
-// POST to FastAPI /insights
-$ch = curl_init(AI_SERVICE_URL . '/insights');
+// Prefer AI-generated insights if available, then fall back
+$ch = curl_init(AI_SERVICE_URL . '/insights_ai');
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
 curl_setopt($ch, CURLOPT_POST, true);
@@ -32,6 +32,18 @@ curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
 $resp = curl_exec($ch);
 $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
+
+if ($http !== 200) {
+    // Fallback to rule-based endpoint
+    $ch = curl_init(AI_SERVICE_URL . '/insights');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+    $resp = curl_exec($ch);
+    $http = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+}
 
 if ($http !== 200) {
     header('Content-Type: application/json');

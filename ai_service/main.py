@@ -110,29 +110,104 @@ def insights(devices: List[Device]):
     return {"insights": out}
 
 
+# AI-generated insights (uses OpenAI if key available)
+@app.post("/insights_ai")
+def insights_ai(devices: List[Device]):
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        # Fallback to rule-based insights if no key configured
+        return insights(devices)
+
+    try:
+        client = OpenAI(api_key=api_key)
+        model = os.getenv("OPENAI_INSIGHTS_MODEL", os.getenv("OPENAI_MODEL", "gpt-4o-mini"))
+        compact: List[Dict[str, Any]] = []
+        for d in devices:
+            st = d.state or {}
+            compact.append({
+                "name": d.name,
+                "type": d.type,
+                "on": bool(st.get("on", False)),
+                "power_w": d.power_w,
+                "last_active": d.last_active.isoformat() if isinstance(d.last_active, datetime) else (str(d.last_active) if d.last_active else None),
+                "attrs": {k:v for k,v in st.items() if k != "on"},
+            })
+        system = (
+            "You are VoltSpace's energy analyst. Analyze devices and produce actionable insights. "
+            "Return ONLY a JSON object with key 'insights' as a list of items with fields: severity ('info'|'warn'|'critical'), title, detail. "
+            "Focus on long-on lights (>8h), AC overuse (>6h), phantom loads at night (00:00-05:00), high draws, and shifting flexible plugs (22:00-06:00)."
+        )
+        import json
+        user = "Devices JSON:\n" + json.dumps(compact, ensure_ascii=False)
+        resp = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role":"system","content":system},
+                {"role":"user","content":user},
+            ],
+            temperature=0.2,
+            max_tokens=600,
+            timeout=30,
+        )
+        text = (resp.choices[0].message.content or "").strip()
+        # Try reading as JSON; tolerate leading prose
+        try:
+            data = json.loads(text)
+        except Exception:
+            start = text.find('{')
+            data = json.loads(text[start:]) if start >= 0 else {"insights": []}
+        ins = data.get("insights", [])
+        cleaned = []
+        for i in ins:
+            sev = (i.get("severity") or "info").lower()
+            if sev not in ("info","warn","critical"): sev = "info"
+            cleaned.append({
+                "severity": sev,
+                "title": i.get("title","Insight")[:128],
+                "detail": i.get("detail",""),
+            })
+        return {"insights": cleaned}
+    except Exception as e:
+        # On error, fall back
+        return insights(devices)
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # OpenAI agent (OpenAI SDK 1.x style)
 # ──────────────────────────────────────────────────────────────────────────────
 class AgentQuery(BaseModel):
     question: str
+    context: Optional[dict | str] = None
+    user_id: Optional[int] = None
 
 
 @app.post("/agent")
 def agent(q: AgentQuery):
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
-        return {"answer": "OpenAI API key not set. Add OPENAI_API_KEY to ai-service/.env and restart the service."}
+        hint = " with context" if q.context else ""
+        return {"answer": f"[Local demo] No OpenAI key set. Try using Dashboard & Insights; consider turning off long-running devices and shifting flexible loads{hint}."}
 
     model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
     try:
         client = OpenAI(api_key=api_key)
+        messages = [
+            {"role": "system", "content": "You are VoltSpace's home energy assistant. Be concise and actionable."}
+        ]
+        # Inject database context if provided by PHP
+        if q.context is not None:
+            try:
+                import json
+                ctx = q.context if isinstance(q.context, str) else json.dumps(q.context, ensure_ascii=False)
+            except Exception:
+                ctx = str(q.context)
+            messages.append({"role": "system", "content": "Context from database (JSON/text):\n" + (ctx[:6000] if isinstance(ctx, str) else str(ctx))})
+        messages.append({"role": "user", "content": q.question.strip()})
+
         resp = client.chat.completions.create(
             model=model,
-            messages=[
-                {"role": "system", "content": "You are VoltSpace's home energy assistant. Be concise and actionable."},
-                {"role": "user", "content": q.question.strip()},
-            ],
+            messages=messages,
             temperature=0.2,
             max_tokens=200,
             # OpenAI 1.x uses request timeouts via client config; this param is accepted by HTTPX under the hood.
