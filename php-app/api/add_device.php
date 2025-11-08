@@ -75,7 +75,14 @@ $power_w = 0;
 switch ($type) {
     case 'light': $power_w = 9; break;
     case 'ac': $power_w = 900; break;
-    case 'plug': $power_w = random_int(10, 1500); break;
+    case 'plug':
+        // Use category-based defaults when adding generic plugs
+        $cat_defaults = [
+            'tv'=>80, 'pc'=>250, 'speaker'=>30, 'fridge'=>150, 'washer'=>500, 'camera'=>5,
+            'essential'=>120, 'non_essential'=>60, 'flexible'=>80
+        ];
+        $power_w = $cat_defaults[$category] ?? random_int(20, 800);
+        break;
     case 'tv': $power_w = 120; break;
     case 'pc': $power_w = 200; break;
     case 'speaker': $power_w = 20; break;
