@@ -167,6 +167,24 @@ for ($h = 0; $h < 24; $h++) {
     $series[$h] = $sumW;
 }
 
+// Compute a small savings note vs previous dashboard view in this session
+if (!isset($_SESSION)) { session_start(); }
+$savings_note = '';
+$prev_kwh = isset($_SESSION['last_kwh_today']) ? (float)$_SESSION['last_kwh_today'] : null;
+$_SESSION['last_kwh_today'] = (float)$kwh_today;
+if ($prev_kwh !== null && $prev_kwh > $kwh_today) {
+    $saved_kwh = max(0, $prev_kwh - $kwh_today);
+    if ($saved_kwh >= 0.01) {
+        $kg_co2_per_kwh = 0.4; // rough global average factor
+        $saved_kg = $saved_kwh * $kg_co2_per_kwh;
+        $trees_per_year_kg = 22.0; // ~22 kg/year per tree (very rough)
+        $tree_equiv = max(0.1, $saved_kg / $trees_per_year_kg);
+        $savings_note = 'You saved ' . number_format($saved_kwh, 2) . ' kWh. '
+            . 'That avoids ~' . number_format($saved_kg, 2) . ' kg CO₂ '
+            . '(≈ ' . number_format($tree_equiv, 2) . ' trees/year equivalent).';
+    }
+}
+
 $page_class = 'dashboard-page';
 include __DIR__ . '/../includes/header.php';
 ?>
@@ -259,6 +277,18 @@ include __DIR__ . '/../includes/header.php';
                echo '</div>';
                echo '</div>';
                echo '<div class="mini-chart-legend">Today hourly load (W). Peak: '.$maxW.' W</div>';
+               // Always show a green savings banner under the chart
+               if (empty($savings_note)) {
+                   $kg_co2_per_kwh = 0.4;
+                   $saved_kg = $kwh_today * $kg_co2_per_kwh;
+                   $trees_per_year_kg = 22.0;
+                   $tree_equiv = max(0.1, $saved_kg / $trees_per_year_kg);
+                   $note_text = 'Today\'s usage so far: ' . number_format($kwh_today, 2) . ' kWh '
+                     . '(~' . number_format($saved_kg, 2) . ' kg CO₂, ≈ ' . number_format($tree_equiv, 2) . ' trees/year).';
+               } else {
+                   $note_text = $savings_note;
+               }
+               echo '<div class="savings-banner">'.'🌳 '.h($note_text).'</div>';
                echo '</div>';
             ?>
         </div>
