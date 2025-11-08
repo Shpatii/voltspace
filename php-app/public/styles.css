@@ -27,7 +27,7 @@ h2{margin:0 0 16px;font-size:22px;font-weight:600}
 
 .cards{display:grid;gap:22px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin-bottom:32px}
 .card{background:var(--surface);border:1px solid rgba(99,117,164,.12);border-radius:20px;padding:24px;box-shadow:var(--shadow-soft);width:100%}
-.card.device-list-card{padding:32px 36px;width:calc(100% + 605px);max-width:calc(100% + 605px);margin-left:-300px;margin-right:-300px;min-width:0;overflow-x:auto}
+.card.device-list-card{padding:32px 36px;width:calc(90% + 605px);max-width:calc(90% + 605px);margin-left:-300px;margin-right:-300px;min-width:0;overflow-x:auto}
 .grid.two{display:grid;grid-template-columns:1fr 1fr;gap:22px}
 .grid.device-split{display:grid;grid-template-columns:2fr 1fr;gap:40px;align-items:start}
 .grid.device-split > .card:not(.device-list-card){margin-left:285px}
