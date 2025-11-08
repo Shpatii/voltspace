@@ -13,13 +13,13 @@ main.container{padding-top:28px;padding-bottom:48px}
 .page-header .actions{display:flex;gap:12px;flex-wrap:wrap}
 
 .topbar{background:var(--surface);border-bottom:1px solid var(--border);box-shadow:0 16px 34px rgba(15,23,42,.08)}
-.topbar .container{display:flex;align-items:center;gap:18px;padding:12px 18px;max-width:1000px}
+.topbar .container{display:flex;align-items:center;gap:12px;padding:10px 18px;width:100%;max-width:1200px}
 .topbar .brand{font-size:18px;font-weight:700;letter-spacing:.02em;color:var(--text)}
-.nav{display:flex;align-items:center;gap:10px;margin-left:auto;flex-wrap:wrap}
-.nav a{padding:6px 10px;border-radius:999px;background:transparent;border:1px solid transparent;transition:all .15s ease;font-weight:500;color:#48506a}
+.nav{display:flex;align-items:center;gap:12px;margin-left:auto;flex-wrap:nowrap;white-space:nowrap;overflow-x:auto}
+.nav a{padding:6px 8px;border-radius:999px;background:transparent;border:1px solid transparent;transition:all .12s ease;font-weight:500;color:#48506a;font-size:13px}
 .nav a:hover{border-color:rgba(54,89,246,.3);background:rgba(54,89,246,.08);color:var(--accent)}
-.nav .user{color:var(--muted);font-size:14px;padding:0;border:none;background:none}
-.nav .logout{border-color:rgba(226,74,74,.18);color:#c13d3d}
+.nav .user{color:var(--muted);font-size:13px;padding:0;border:none;background:none;margin-left:32px}
+.nav .logout{border-color:rgba(226,74,74,.18);color:#c13d3d;margin-left:8px}
 .nav .logout:hover{background:rgba(226,74,74,.1);border-color:rgba(226,74,74,.28);color:#a22f2f}
 
 h1{margin:0 0 1px;font-size:26px;font-weight:700}
@@ -139,7 +139,8 @@ body.login-page main.container,body.register-page main.container{display:flex;al
 .auth-lamp::before{content:"";position:absolute;top:-28px;left:-20px;width:48px;height:28px;background:#1b2342;border-radius:24px 24px 8px 8px}
 .auth-lamp::after{content:"";position:absolute;top:-24px;left:-16px;width:40px;height:20px;background:rgba(54,89,246,.18);border-radius:20px}
 
-table{width:100%;border-collapse:collapse;font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:12px;height: 100%;
+  min-height: calc(100% + 100px);}
 th,td{padding:6px 0;border-bottom:1px solid var(--border)}
 th{font-size:10px;text-transform:uppercase;letter-spacing:.08em;text-align:left;color:var(--muted);background:transparent}
 tbody tr:last-child td{border-bottom:none}
@@ -171,16 +172,16 @@ td.table-actions button{white-space:nowrap}
 
 /* Devices page specific overrides */
 .devices-page .grid.device-split {
-  grid-template-columns: 2fr 280px; /* wider left column for device list */
-  gap: 22px;
+  grid-template-columns: 3fr 260px; /* wider left column */
+  gap: 28px;
   align-items: start;
-  /* widen by 150px on each side */
-  width: calc(100% + 300px);
-  max-width: calc(100% + 300px);
-  margin-left: -150px;
-  margin-right: -150px;
+  width: calc(100% + 400px); /* extend width */
+  max-width: calc(100% + 400px);
+  margin-left: -200px; /* move layout outwards */
+  margin-right: -200px;
   box-sizing: border-box;
 }
+
 
 /* restore device-list card to normal flow only on devices page */
 .devices-page .card.device-list-card {
@@ -335,3 +336,101 @@ button.danger:active{box-shadow:0 10px 22px rgba(226,74,74,.2)}
 .msg.user .bubble{background:#eaf0ff;color:#1c2233;border:1px solid rgba(54,89,246,.25);border-bottom-right-radius:6px}
 .msg.bot .bubble{background:#f4f6fb;color:#1c2233;border:1px solid rgba(99,117,164,.18);border-bottom-left-radius:6px}
 .chat-input{display:flex;gap:10px}
+
+/* Floorplan → 3D upload modal styles */
+.floorplan-page .upload-modal{max-width:520px;margin:18px auto;padding:18px;background:var(--surface);border:1px solid rgba(99,117,164,.08);border-radius:12px;box-shadow:0 24px 44px rgba(15,23,42,.06)}
+.floorplan-page .dropzone{border:2px dashed rgba(99,117,164,.24);border-radius:10px;padding:28px;display:flex;align-items:center;justify-content:center;background:#fff}
+.floorplan-page .drop-inner{text-align:center}
+.floorplan-page .drop-inner .muted{display:block;text-align:center;margin:6px 0}
+.floorplan-page .cloud{font-size:34px;margin-bottom:10px}
+.floorplan-page .drop-inner h3{margin:0 0 8px;font-size:18px}
+.floorplan-page .drop-inner .small{font-size:12px}
+.floorplan-page .or{margin:12px 0;color:var(--muted)}
+.floorplan-page .btn-browse{padding:8px 18px;border-radius:8px}
+.floorplan-page .file-list{margin-top:12px;border-radius:8px;overflow:hidden}
+.floorplan-page .file-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-top:1px solid rgba(99,117,164,.06);background:#fff}
+.floorplan-page .file-row:first-child{border-top:none}
+.floorplan-page .file-icon{width:36px;height:36px;background:#eef3ff;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.floorplan-page .file-name{flex:1;font-size:14px}
+.floorplan-page .file-size{font-size:12px;color:var(--muted)}
+.floorplan-page .file-delete{color:#e24a4a;cursor:pointer}
+.floorplan-page .upload-modal .muted{margin-top:6px}
+
+/* Small screens: full width */
+@media (max-width: 640px){
+  .floorplan-page .upload-modal{margin:10px;padding:14px}
+}
+
+/* Page-specific spacing tweaks for Homes and Rooms lists */
+.homes-page .card,
+.rooms-page .card {
+  padding: 24px 26px;            /* a bit more interior breathing room */
+  border-radius: 18px;
+}
+
+.homes-page .section-title,
+.rooms-page .section-title {
+  margin-bottom: 18px;
+}
+
+/* Slightly larger table spacing for readability in the lists */
+.homes-page table,
+.rooms-page table {
+   height: 100%;
+  min-height: calc(100% + 150px);
+}
+
+.homes-page th,
+.rooms-page th {
+  padding: 12px 0;
+  font-size: 12px;
+  letter-spacing: .08em;
+}
+
+.homes-page td,
+.rooms-page td {
+  padding: 12px 0;
+  vertical-align: middle;
+}
+
+/* Add visual row spacing by increasing the bottom border gap */
+.homes-page tbody tr td,
+.rooms-page tbody tr td {
+  border-bottom: 1px solid rgba(228,232,245,.9);
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+/* tighten small secondary text spacing inside cells */
+.homes-page .data-table td small,
+.rooms-page .data-table td small {
+  margin-top: 6px;
+  padding-top: 6px;
+}
+
+/* increase gap between left-list card and right form card on these pages */
+.homes-page .grid.two,
+.rooms-page .grid.two {
+  gap: 36px;
+}
+
+/* Responsive fallbacks remain */
+@media (max-width: 1100px) {
+  .homes-page .card,
+  .rooms-page .card { padding: 16px; }
+  .homes-page th,.homes-page td,
+  .rooms-page th,.rooms-page td { padding: 8px 0; }
+  .homes-page .grid.two, .rooms-page .grid.two { gap: 20px; }
+}
+
+/* Devices page: align only the filter block with the left edge of the devices list */
+.devices-page .filters{
+  margin-left: -150px;                /* shift the filter left to match the grid start */
+  box-sizing: border-box;
+  max-width: calc(100% + 150px);     /* keep its width aligned with the shifted grid */
+}
+
+/* revert on smaller screens */
+@media (max-width:1200px){
+  .devices-page .filters{ margin-left:0; max-width:100%; }
+}

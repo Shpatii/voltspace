@@ -23,11 +23,18 @@ $CATEGORY_ICONS = [
     'non_essential' => '⏱️',
     'flexible'      => '🔄',
 ];
-// Load homes and rooms for selection
-$stmt = $db->prepare('SELECT id, name FROM homes WHERE user_id=? ORDER BY name');
+$stmt = $db->prepare('SELECT id, name, country FROM homes WHERE user_id=? ORDER BY name');
 $stmt->bind_param('i', $user['id']);
 $stmt->execute();
 $homes = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+// Build quick lookup map by id and load country flag data
+$home_map = [];
+foreach ($homes as $hh) { $home_map[(int)$hh['id']] = $hh; }
+$rates = vs_country_rates();
+
+// allow optional initial selection from querystring
+$selected_home = isset($_GET['home_id']) ? (int)$_GET['home_id'] : 0;
 
 $rooms = [];
 if ($homes) {
@@ -37,8 +44,8 @@ if ($homes) {
     $rooms = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-// List devices
-$stmt = $db->prepare('SELECT d.*, r.name AS room_name FROM devices d INNER JOIN rooms r ON d.room_id=r.id INNER JOIN homes h ON r.home_id=h.id WHERE h.user_id=? ORDER BY d.created_at DESC');
+// List devices (include room.home_id so we can filter client-side)
+$stmt = $db->prepare('SELECT d.*, r.name AS room_name, r.home_id FROM devices d INNER JOIN rooms r ON d.room_id=r.id INNER JOIN homes h ON r.home_id=h.id WHERE h.user_id=? ORDER BY d.created_at DESC');
 $stmt->bind_param('i', $user['id']);
 $stmt->execute();
 $devices = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -58,6 +65,20 @@ include __DIR__ . '/../includes/header.php';
 </section>
 
 <div class="devices-page">
+
+  <!-- Home filter (client-side) -->
+  <div class="filters" style="margin-bottom:18px">
+    <label style="display:inline-block;font-weight:600;margin-right:12px">Show devices for</label>
+    <select id="homeFilter" style="min-width:220px;padding:8px;border-radius:8px">
+      <option value="">All homes</option>
+      <?php foreach ($homes as $h): $hid=(int)$h['id']; $flag = $rates[strtoupper($h['country'] ?? '')]['flag'] ?? '🏳️'; ?>
+        <option value="<?php echo $hid; ?>" <?php echo ($selected_home === $hid) ? 'selected' : ''; ?>>
+          <?php echo h($flag . ' ' . $h['name']); ?>
+        </option>
+      <?php endforeach; ?>
+    </select>
+  </div>
+
   <div class="grid device-split">
     <section class="card device-list-card">
         <h2>Device List</h2>
@@ -71,7 +92,7 @@ include __DIR__ . '/../includes/header.php';
                     <tr><td colspan="8" class="empty">No devices yet. Add your first one using the wizard.</td></tr>
                 <?php else: ?>
                     <?php foreach ($devices as $d): $state = safe_json_decode($d['state_json']); $on = $state['on'] ?? false; ?>
-                        <tr data-device-id="<?php echo (int)$d['id']; ?>">
+                        <tr data-device-id="<?php echo (int)$d['id']; ?>" data-home-id="<?php echo (int)$d['home_id']; ?>">
                             <td><?php $ti = $TYPE_ICONS[$d['type']] ?? '🧩'; echo '<span class="icon">'.h($ti).'</span> '.h($d['name']); ?></td>
                             <td><?php echo h($d['type']); ?></td>
                             <td><?php echo h($d['room_name']); ?></td>
@@ -118,7 +139,8 @@ include __DIR__ . '/../includes/header.php';
                 <select name="room_id" required>
                     <option value="">Select room</option>
                     <?php foreach ($rooms as $r): ?>
-                        <option value="<?php echo (int)$r['id']; ?>"><?php echo h(room_name($homes, (int)$r['home_id']).' / '.$r['name']); ?></option>
+                        <?php $hid = (int)$r['home_id']; $home = $home_map[$hid] ?? null; $flag = $rates[strtoupper($home['country'] ?? '')]['flag'] ?? '🏳️'; $hname = $home ? $home['name'] : room_name($homes, $hid); ?>
+                        <option value="<?php echo (int)$r['id']; ?>"><?php echo h($flag) . ' ' . h($hname) . ' / ' . h($r['name']); ?></option>
                     <?php endforeach; ?>
                 </select>
             </label>
@@ -211,6 +233,22 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    // new: filter devices by selected home
+    const homeFilter = document.getElementById('homeFilter');
+    if (homeFilter) {
+        const rows = Array.from(document.querySelectorAll('tr[data-device-id]'));
+        function applyFilter() {
+            const val = homeFilter.value;
+            rows.forEach(r => {
+                const hid = r.getAttribute('data-home-id') || '';
+                r.style.display = (!val || hid === val) ? '' : 'none';
+            });
+        }
+        homeFilter.addEventListener('change', applyFilter);
+        // apply initial filter if selected via querystring
+        applyFilter();
+    }
 });
 </script>
 

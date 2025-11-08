@@ -63,4 +63,23 @@ function vs_ensure_home_energy_columns(mysqli $db): void {
     @$db->query("ALTER TABLE homes ADD COLUMN IF NOT EXISTS currency VARCHAR(3) NULL");
 }
 
+/**
+ * Inline SVG flags for a small set of countries.
+ * Add more entries as needed. These are simple, small SVGs
+ * intended for inline insertion (e.g. in table cells or next to selects).
+ */
+function vs_flag_svgs() {
+    return [
+        'XK' => '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="12" viewBox="0 0 18 12" aria-hidden="true"><rect width="18" height="12" fill="#0057b7"/><circle cx="9" cy="6" r="2.2" fill="#f6c90e"/></svg>',
+        'AL' => '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="12" viewBox="0 0 18 12" aria-hidden="true"><rect width="18" height="12" fill="#e41f2d"/><text x="9" y="9" font-size="6" text-anchor="middle" fill="#000" font-family="Arial">🦅</text></svg>',
+        'LU' => '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="12" viewBox="0 0 18 12" aria-hidden="true"><rect width="18" height="4" y="0" fill="#e4333c"/><rect width="18" height="4" y="4" fill="#ffffff"/><rect width="18" height="4" y="8" fill="#00a3dd"/></svg>',
+    ];
+}
+
+function vs_flag_svg($code) {
+    $code = strtoupper(trim((string)$code));
+    $svgs = vs_flag_svgs();
+    return $svgs[$code] ?? '';
+}
+
 ?>
