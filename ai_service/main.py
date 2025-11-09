@@ -96,7 +96,7 @@ def insights(devices: List[Device]):
         if t == "plug" and on and 0 <= hour <= 5 and d.power_w > 5:
             out.append({
                 "severity": "info",
-                "title": f"Night-time load on plug: {d.name}",
+                "title": f"Night-time load  on plug: {d.name}",
                 "detail": f"'{d.name}' is using ~{d.power_w}W overnight (00:00–05:00). Consider turning it off.",
             })
 
