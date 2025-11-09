@@ -1,6 +1,6 @@
 :root{--bg:#f6f7fb;--surface:#ffffff;--surface-alt:#eef1fb;--text:#1c2233;--muted:#7c879c;--accent:#3659f6;--accent-dark:#2544d7;--border:#e4e8f5;--shadow-soft:0 18px 38px rgba(15,23,42,.08);--shadow-medium:0 22px 46px rgba(15,23,42,.1);--ok:#19c37d;--warn:#f5a623;--critical:#e24a4a}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:13px/1.35 "Segoe UI",system-ui,-apple-system,sans-serif}
+body{margin:0;background:linear-gradient(180deg,#ffffff 0%, #eff4fc 35%, #f5f8ff 100%);color:var(--text);font:13px/1.35 "Segoe UI",system-ui,-apple-system,sans-serif;background-attachment:fixed}
 a{color:inherit;text-decoration:none}
 a:hover{color:var(--accent)}
 .container{max-width:1000px;margin:0 auto;padding:24px 18px}
@@ -431,7 +431,17 @@ button.danger:active{box-shadow:0 10px 22px rgba(226,74,74,.2)}
   max-width: calc(100% + 150px);     /* keep its width aligned with the shifted grid */
 }
 
-/* revert on smaller screens */
-@media (max-width:1200px){
-  .devices-page .filters{ margin-left:0; max-width:100%; }
-}
+/* Chat / Assistant */
+.chat-card{background:#fff;border:1px solid var(--border)}
+.chat-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.messages{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;max-height:420px;overflow:auto;margin-bottom:10px}
+.msg{display:flex;margin:8px 0}
+.msg .bubble{padding:10px 12px;border-radius:14px;max-width:75%;box-shadow:0 10px 24px rgba(15,23,42,.06);border:1px solid #e4e8f5}
+.msg.user{justify-content:flex-end}
+.msg.user .bubble{background:#eaf3ff;border-color:#cfe2ff}
+.msg.bot .bubble{background:#f6f7fb;border-color:#e4e8f5}
+.chat-input{display:flex;gap:8px;margin-top:10px;align-items:center}
+.chat-input input{flex:1;background:#fff;border:1px solid var(--border);height:40px;padding:10px 12px;border-radius:10px}
+.chat-input button{background:linear-gradient(180deg,#2a7cff,#2561d9);color:#fff;border:none;height:40px;padding:0 14px;border-radius:10px;width:auto;flex:0 0 auto}
+.chat-toolbar .btn{width:auto}
+
